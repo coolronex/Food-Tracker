@@ -10,15 +10,15 @@ import UIKit
 
 class APIManager: NSObject {
     
-    func saveMealsInAPI(mealName: String, calories: Int, description: String, rating: Int) {
+    func saveMealsInAPI(meal: Meal) {
         
         var components = URLComponents(string:"https://cloud-tracker.herokuapp.com")
         components?.path = "/users/me/meals"
         
-        let convertedCalories = String(calories)
-        let nameQuery = URLQueryItem(name: "title", value: mealName)
+        let convertedCalories = String(meal.calories)
+        let nameQuery = URLQueryItem(name: "title", value: meal.name)
         let caloriesQuery = URLQueryItem(name: "calories", value: convertedCalories)
-        let mealDescriptionQuery = URLQueryItem(name: "description", value: description)
+        let mealDescriptionQuery = URLQueryItem(name: "description", value: meal.mealDescription)
         
         components?.queryItems = [nameQuery, caloriesQuery, mealDescriptionQuery]
         
@@ -51,11 +51,11 @@ class APIManager: NSObject {
             do {
                 // get created object's id from data
                 let json = try JSONSerialization.jsonObject(with: data) as! Dictionary<String,Dictionary<String,Any>>
-                guard let meal = json["meal"], let id = meal["id"] as? Int else {
+                guard let jsonMeal = json["meal"], let id = jsonMeal["id"] as? Int else {
                     return
                 }
                 // make another request with the ratings using the id value
-                self.updateMealRatingToAPI(mealID: id, rating: rating)
+                self.updateMealRatingToAPI(mealID: id, rating: meal.rating)
                 
             } catch {
                 print(#line, error.localizedDescription)
