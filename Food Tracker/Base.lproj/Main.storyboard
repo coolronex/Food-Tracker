@@ -67,7 +67,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="hh9-FH-wLM" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-582" y="125"/>
+            <point key="canvasLocation" x="-694" y="125"/>
         </scene>
         <!--New Meal-->
         <scene sceneID="tne-QT-ifu">
@@ -78,9 +78,9 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="sOV-d8-mQo">
-                                <rect key="frame" x="16" y="79" width="343" height="410"/>
+                                <rect key="frame" x="16" y="79" width="343" height="486"/>
                                 <subviews>
-                                    <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Enter meal name" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="kjj-wG-9YO">
+                                    <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Enter meal name" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="kjj-wG-9YO">
                                         <rect key="frame" x="0.0" y="0.0" width="343" height="30"/>
                                         <nil key="textColor"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
@@ -99,9 +99,25 @@
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="m02-5M-g05" customClass="RatingControl" customModule="Food_Tracker" customModuleProvider="target">
                                         <rect key="frame" x="45.5" y="366" width="252" height="44"/>
                                     </stackView>
+                                    <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Enter meal calories" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="0G7-GH-gwz">
+                                        <rect key="frame" x="0.0" y="418" width="343" height="30"/>
+                                        <nil key="textColor"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <textInputTraits key="textInputTraits"/>
+                                    </textField>
+                                    <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Enter meal description" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="kGa-QI-X8o">
+                                        <rect key="frame" x="0.0" y="456" width="343" height="30"/>
+                                        <nil key="textColor"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <textInputTraits key="textInputTraits"/>
+                                    </textField>
                                 </subviews>
                                 <constraints>
                                     <constraint firstItem="bIU-xb-bmV" firstAttribute="centerX" secondItem="sOV-d8-mQo" secondAttribute="centerX" id="8hL-zO-jdZ"/>
+                                    <constraint firstItem="0G7-GH-gwz" firstAttribute="leading" secondItem="sOV-d8-mQo" secondAttribute="leading" id="G4l-jV-kdn"/>
+                                    <constraint firstAttribute="trailing" secondItem="0G7-GH-gwz" secondAttribute="trailing" id="USa-7g-Ydr"/>
+                                    <constraint firstAttribute="trailing" secondItem="kGa-QI-X8o" secondAttribute="trailing" id="bTa-lK-vgP"/>
+                                    <constraint firstItem="kGa-QI-X8o" firstAttribute="leading" secondItem="sOV-d8-mQo" secondAttribute="leading" id="dMO-u8-Z7T"/>
                                     <constraint firstAttribute="trailing" secondItem="kjj-wG-9YO" secondAttribute="trailing" id="vMx-8B-T6O"/>
                                 </constraints>
                             </stackView>
@@ -127,6 +143,8 @@
                         </barButtonItem>
                     </navigationItem>
                     <connections>
+                        <outlet property="caloriesTextField" destination="0G7-GH-gwz" id="bRX-Nc-QdZ"/>
+                        <outlet property="mealDescriptionTextField" destination="kGa-QI-X8o" id="qpe-37-Usp"/>
                         <outlet property="nameTextField" destination="kjj-wG-9YO" id="R7a-kM-RgF"/>
                         <outlet property="photoImageView" destination="bIU-xb-bmV" id="A4q-Bu-hX9"/>
                         <outlet property="ratingControl" destination="m02-5M-g05" id="okd-XX-feT"/>
@@ -141,7 +159,7 @@
                     </connections>
                 </tapGestureRecognizer>
             </objects>
-            <point key="canvasLocation" x="625" y="125"/>
+            <point key="canvasLocation" x="1242" y="174"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="zWr-lA-h0K">
@@ -159,7 +177,7 @@
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="7K7-YX-UMF" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-1186" y="125"/>
+            <point key="canvasLocation" x="-1489" y="125"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="pCa-UJ-tCF">
@@ -177,7 +195,7 @@
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="N3S-UW-rXt" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="28" y="556"/>
+            <point key="canvasLocation" x="230" y="548"/>
         </scene>
     </scenes>
     <resources>

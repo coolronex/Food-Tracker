@@ -12,13 +12,86 @@ import os.log
 class MealTableViewController: UITableViewController {
 
     var meals = [Meal]()
+    var apiManager = APIManager()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         navigationItem.leftBarButtonItem = editButtonItem
-        loadSampleMeals()
-
+        apiManager.getMealsFromAPI { (meals, error) in
+            if let error = error {
+                print("Error: \(error)")
+            }
+            guard let meals = meals else {
+                print("Error getting pokemon")
+                return
+            }
+            self.meals = meals
+            OperationQueue.main.addOperation {
+                self.tableView.reloadData()
+            }
+        }
+        
+        
+        
+        
+//        var components = URLComponents(string:"https://cloud-tracker.herokuapp.com")
+//        components?.path = "/users/me/meals"
+//
+//        let url = components?.url
+//        guard let urlWithComponents = url else {
+//            return
+//        }
+//
+//        var request = URLRequest(url: urlWithComponents)
+//        request.addValue("2fR8hefxBqvMenHQ5vum226Q", forHTTPHeaderField: "token")
+//        request.httpMethod = "GET"
+//
+//        let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
+//
+//            guard let data = data, error == nil else {
+//                print("error: \(error!.localizedDescription)")
+//                return
+//            }
+//
+//            if let statusCode = (response as? HTTPURLResponse)?.statusCode {
+//                if statusCode != 200 {
+//                    print("statusCode should be 200, but is \(statusCode)")
+//                    print("response: \(response!)")
+//                }
+//            }
+//
+//            if let responseString = String(data: data, encoding: .utf8) {
+//                print("responseString: \(responseString)")
+//            }
+//
+//            do {
+//                guard let mealArrayOfDictionary = try JSONSerialization.jsonObject(with: data) as? [[String: Any]] else {
+//                    print("error serialization")
+//                    return
+//                }
+//
+//                for mealDictionary in mealArrayOfDictionary {
+//
+//                    let title = mealDictionary["title"] as? String ?? ""
+//                    let rating = mealDictionary["rating"] as? Int ?? 0
+//                    let calories = mealDictionary["calories"] as? Int ?? 0
+//                    let description = mealDictionary["description"] as? String ?? ""
+//                    let image = mealDictionary["imagePath"] as? UIImage ?? UIImage(named:"defaultPhoto")
+//                    let newMeal = Meal(name: title, photo: image, rating: rating, calories: calories, mealDescription: description)
+//                    if let newMeal = newMeal {
+//                        self.meals.append(newMeal)
+//                    }
+//                }
+//                OperationQueue.main.addOperation {
+//                    self.tableView.reloadData()
+//                }
+//
+//            } catch {
+//                print(#line, error.localizedDescription)
+//            }
+//        }
+//        task.resume()
     }
     
     // MARK: - Table view data source
@@ -115,7 +188,7 @@ class MealTableViewController: UITableViewController {
     // MARK: Actions
     
     @IBAction func unwindToMealList(sender: UIStoryboardSegue) {
-        
+        // request to fetch everything
         if let sourceViewController = sender.source as? MealViewController, let meal = sourceViewController.meal {
             
             if let selectedIndexPath = tableView.indexPathForSelectedRow {
@@ -129,27 +202,26 @@ class MealTableViewController: UITableViewController {
             }
         }
     }
-
     
     
      // MARK: Private Methods
     
-    private func loadSampleMeals() {
-    
-        let photo1 = UIImage(named: "meal1")
-        let photo2 = UIImage(named: "meal2")
-        let photo3 = UIImage(named: "meal3")
-        
-        guard let meal1 = Meal(name: "Caprese Salad", photo: photo1, rating: 4) else {
-            fatalError("Unable to instantiate meal1")
-        }
-        guard let meal2 = Meal(name: "Chicken and Potatoes", photo: photo2, rating: 5) else {
-            fatalError("Unable to instantiate meal2")
-        }
-        guard let meal3 = Meal(name: "Pasta with Meatballs", photo: photo3, rating: 3) else {
-             fatalError("Unable to instantiate meal3")
-        }
-        
-        meals += [meal1, meal2, meal3]
-    }
+//    private func loadSampleMeals() {
+//
+//        let photo1 = UIImage(named: "meal1")
+//        let photo2 = UIImage(named: "meal2")
+//        let photo3 = UIImage(named: "meal3")
+//
+//        guard let meal1 = Meal(name: "Caprese Salad", photo: photo1, rating: 4, calories: 50, mealDescription: "salad") else {
+//            fatalError("Unable to instantiate meal1")
+//        }
+//        guard let meal2 = Meal(name: "Chicken and Potatoes", photo: photo2, rating: 5, calories: 120, mealDescription: "baked") else {
+//            fatalError("Unable to instantiate meal2")
+//        }
+//        guard let meal3 = Meal(name: "Pasta with Meatballs", photo: photo3, rating: 3, calories: 100, mealDescription: "sphagetti") else {
+//             fatalError("Unable to instantiate meal3")
+//        }
+//
+//        meals += [meal1, meal2, meal3]
+//    }
 }

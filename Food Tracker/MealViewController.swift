@@ -21,6 +21,8 @@ class MealViewController: UIViewController, UITextFieldDelegate, UIImagePickerCo
     @IBOutlet weak var photoImageView: UIImageView!
     @IBOutlet weak var ratingControl: RatingControl!
     @IBOutlet weak var saveButton: UIBarButtonItem!
+    @IBOutlet weak var caloriesTextField: UITextField!
+    @IBOutlet weak var mealDescriptionTextField: UITextField!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -33,11 +35,13 @@ class MealViewController: UIViewController, UITextFieldDelegate, UIImagePickerCo
             nameTextField.text = meal.name
             photoImageView.image = meal.photo
             ratingControl.rating = meal.rating
+            mealDescriptionTextField.text = meal.mealDescription
+            caloriesTextField.text = String(meal.calories)
         }
         
         // Enable the Save button only if the text field has a valid Meal name
         updateSaveButtonState()
-    
+        
     }
     
     //MARK: UITextFieldDelegate
@@ -106,10 +110,102 @@ class MealViewController: UIViewController, UITextFieldDelegate, UIImagePickerCo
         let name = nameTextField.text ?? ""
         let photo = photoImageView.image
         let rating = ratingControl.rating
+        let calories = Int(caloriesTextField.text!)
+        let mealDescription = mealDescriptionTextField.text
         
         // Set the meal to be passed to MealTableViewController after the unwind segue.
-        meal = Meal(name: name, photo: photo, rating: rating)
+        meal = Meal(name: name, photo: photo, rating: rating, calories: calories!, mealDescription: mealDescription!)
+        
+        
+        
+        // Saving Meal object to API (REFACTOR LATER)
+        
+        var components = URLComponents(string:"https://cloud-tracker.herokuapp.com")
+        components?.path = "/users/me/meals"
+        
+        guard let unwrappedCalories = calories, let unwrappedMealDescription = mealDescription else {
+            fatalError("properties are nil")
+        }
+        let convertedCalories = String(unwrappedCalories)
+        let nameQuery = URLQueryItem(name: "title", value: name)
+        let caloriesQuery = URLQueryItem(name: "calories", value: convertedCalories)
+        let mealDescriptionQuery = URLQueryItem(name: "description", value: unwrappedMealDescription)
+        components?.queryItems = [nameQuery, caloriesQuery, mealDescriptionQuery]
+
+        let url = components?.url
+        guard let urlWithComponents = url else {
+            fatalError("Error with combining URL components")
+        }
+        
+        var request = URLRequest(url: urlWithComponents)
+        request.addValue("2fR8hefxBqvMenHQ5vum226Q", forHTTPHeaderField: "token")
+        request.httpMethod = "POST"
+        
+        let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
+            
+            guard let data = data, error == nil else {
+                print("error: \(error!.localizedDescription)")
+                return
+        }
+            if let statusCode = (response as? HTTPURLResponse)?.statusCode {
+                if statusCode != 200 {
+                    print("statusCode should be 200, but is \(statusCode)")
+                    print("response: \(response!)")
+                }
+            }
+            
+            if let responseString = String(data: data, encoding: .utf8) {
+            print("responseString: \(responseString)")
+            }
+            
+            do {
+                // get created object's id from data
+                let json = try JSONSerialization.jsonObject(with: data) as! Dictionary<String,Dictionary<String,Any>>
+                guard let meal = json["meal"], let id = meal["id"] as? Int else {
+                    return
+                }
+                // make another request with the ratings using the id value
+                self.updateMealRatingToAPI(mealID: id, rating: rating)
+                
+            } catch {
+                print(#line, error.localizedDescription)
+            }
+        }
+        task.resume()
     }
+    
+    
+    // PRIVATE REQUEST TO UPDATE RATING (REFACTOR)
+    
+    private func updateMealRatingToAPI(mealID: Int, rating: Int) {
+
+        guard var components = URLComponents(string: "https://cloud-tracker.herokuapp.com/users/me/meals/\(mealID)/rate") else {return}
+        let convertedRating = String(rating)
+        let ratingQuery = URLQueryItem(name: "rating", value: convertedRating)
+        components.queryItems = [ratingQuery]
+        guard let URL = components.url else {return}
+        var request = URLRequest(url: URL)
+        request.httpMethod = "POST"
+        
+        request.addValue("2fR8hefxBqvMenHQ5vum226Q", forHTTPHeaderField: "token")
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let session = URLSession.shared
+        let task = session.dataTask(with: request, completionHandler: { (data: Data?, response: URLResponse?, error: Error?) -> Void in
+            if (error == nil) {
+                // Success
+                let statusCode = (response as! HTTPURLResponse).statusCode
+                print("URL Session Task Succeeded: HTTP \(statusCode)")
+            }
+            else {
+                // Failure
+                print("URL Session Task Failed: %@", error!.localizedDescription);
+            }
+        })
+        task.resume()
+    }
+    
+    
     
     @IBAction func cancel(_ sender: UIBarButtonItem) {
         
