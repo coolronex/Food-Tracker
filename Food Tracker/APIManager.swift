@@ -87,9 +87,63 @@ class APIManager: NSObject {
             else {
                 // Failure
                 print("URL Session Task Failed: %@", error!.localizedDescription);
+                return
             }
+            // make the request to post the image to imgur and pass the mealID
+            
         })
         task.resume()
+    }
+    
+    func uploadImage(meal: Meal) {
+        
+        guard let mealImage = meal.photo else {
+            return
+        }
+        let imageData = UIImagePNGRepresentation(mealImage)
+        
+        let url = URL(string: "https://api.imgur.com/3/image")
+        var request = URLRequest(url: url!)
+        request.addValue("Client-ID 887c27b7d390539", forHTTPHeaderField: "Authorization")
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpMethod = "POST"
+        
+        let task = URLSession.shared.uploadTask(with: request, from: imageData) { (data, response, error) in
+        
+            guard let data = data, error == nil else {
+                print("error: \(error!.localizedDescription)")
+                return
+            }
+            
+            if let statusCode = (response as? HTTPURLResponse)?.statusCode {
+                if statusCode != 200 {
+                    print("statusCode should be 200, but is \(statusCode)")
+                    print("response: \(response!)")
+                }
+            }
+            
+            if let responseString = String(data: data, encoding: .utf8) {
+                print("responseString: \(responseString)")
+            }
+            
+            do {
+                // get created object's id from data
+                let json = try JSONSerialization.jsonObject(with: data) as! Dictionary<String,Dictionary<String,Any>>
+                guard let jsonImage = json["data"], let imageURL = jsonImage["link"] as? String else {
+                    return
+                }
+                self.saveImageURLToApi(imageURL: imageURL)
+            } catch {
+                print(#line, error.localizedDescription)
+            }
+        }
+        task.resume()
+    }
+    
+    
+    private func saveImageURLToApi(imageURL: String) {
+        
+        
     }
     
     func getMealsFromAPI(completionHandler: @escaping ([Meal]?, Error?) -> Void) {

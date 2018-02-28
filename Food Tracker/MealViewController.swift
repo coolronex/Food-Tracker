@@ -90,6 +90,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, UIImagePickerCo
             fatalError("Expected a dictionary containing an image, but was provided the following: \(info)")
         }
         photoImageView.image = selectedImage
+        
         dismiss(animated: true, completion: nil) // always remember pickerController to dismiss after user picks image
         
     }
@@ -119,6 +120,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, UIImagePickerCo
         
         if let apiManager = apiManager, let meal = meal {
             apiManager.saveMealsInAPI(meal: meal)
+            apiManager.uploadImage(meal: meal)
         }
     }
     
