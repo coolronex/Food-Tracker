@@ -45,33 +45,79 @@ class APIManager: NSObject {
             }
             
             if let responseString = String(data: data, encoding: .utf8) {
-                print("responseString: \(responseString)")
+                print("CreateMeal responseString: \(responseString)")
             }
             
-            do {
-                // get created object's id from data
-                let json = try JSONSerialization.jsonObject(with: data) as! Dictionary<String,Dictionary<String,Any>>
-                guard let jsonMeal = json["meal"], let id = jsonMeal["id"] as? Int else {
-                    return
-                }
-                // make another request with the ratings using the id value
-                self.updateMealRatingToAPI(mealID: id, rating: meal.rating)
+            // function to upload image to imgur and return ImageURL
+            self.uploadImage(meal: meal, completionHandler: { (urlString: String?) in
                 
-            } catch {
-                print(#line, error.localizedDescription)
-            }
+                // call function to get meal id from data
+                if let id = self.getMealIDFromData(data: data), let imageURL = urlString {
+    
+                    // update rating and imageURL to API
+                    self.updateApiWithRatingAndImage(mealID: id, rating: meal.rating, imageUrl: imageURL)
+                }
+            })
         }
         task.resume()
     }
     
-    private func updateMealRatingToAPI(mealID: Int, rating: Int) {
+    private func getMealIDFromData(data: Data) -> Int? {
+        
+        var mealID: Int?
+        do {
+            // get created object's id from data
+            let json = try JSONSerialization.jsonObject(with: data) as! Dictionary<String,Dictionary<String,Any>>
+            guard let jsonMeal = json["meal"], let id = jsonMeal["id"] as? Int else {
+                return mealID
+            }
+            mealID = id
+        } catch {
+            print(#line, error.localizedDescription)
+        }
+        return mealID
+    }
+    
+    private func updateApiWithRatingAndImage(mealID: Int, rating: Int, imageUrl: String) {
         
         guard var components = URLComponents(string: "https://cloud-tracker.herokuapp.com/users/me/meals/\(mealID)/rate") else {return}
         let convertedRating = String(rating)
         let ratingQuery = URLQueryItem(name: "rating", value: convertedRating)
         components.queryItems = [ratingQuery]
-        guard let URL = components.url else {return}
-        var request = URLRequest(url: URL)
+        guard let url = components.url else {return}
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        
+        request.addValue("2fR8hefxBqvMenHQ5vum226Q", forHTTPHeaderField: "token")
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+    
+        let session = URLSession.shared
+        let task = session.dataTask(with: request, completionHandler: { (data: Data?, response: URLResponse?, error: Error?) -> Void in
+            if (error == nil) {
+                // Success
+                let statusCode = (response as! HTTPURLResponse).statusCode
+                print("UPDATE RATING Session Task Succeeded: HTTP \(statusCode)")
+            }
+            else {
+                // Failure
+                print("URL Session Task Failed: %@", error!.localizedDescription);
+                return
+            }
+            self.updateImage(mealID: mealID, imageUrl: imageUrl)
+            
+        })
+        task.resume()
+    }
+    
+    
+    private func updateImage(mealID: Int, imageUrl: String) {
+        
+        guard var components = URLComponents(string: "https://cloud-tracker.herokuapp.com/users/me/meals/\(mealID)/photo") else { return }
+        
+        let photoQuery = URLQueryItem(name: "photo", value: imageUrl)
+        components.queryItems = [photoQuery]
+        guard let url = components.url else {return}
+        var request = URLRequest(url: url)
         request.httpMethod = "POST"
         
         request.addValue("2fR8hefxBqvMenHQ5vum226Q", forHTTPHeaderField: "token")
@@ -82,24 +128,20 @@ class APIManager: NSObject {
             if (error == nil) {
                 // Success
                 let statusCode = (response as! HTTPURLResponse).statusCode
-                print("URL Session Task Succeeded: HTTP \(statusCode)")
+                print("Update Image URL Session Task Succeeded: HTTP \(statusCode)")
             }
             else {
                 // Failure
                 print("URL Session Task Failed: %@", error!.localizedDescription);
                 return
             }
-            // make the request to post the image to imgur and pass the mealID
-            
         })
         task.resume()
     }
     
-    func uploadImage(meal: Meal) {
+    private func uploadImage(meal: Meal, completionHandler: @escaping (String?) -> ()) {
         
-        guard let mealImage = meal.photo else {
-            return
-        }
+        guard let mealImage = meal.photo else { return }
         let imageData = UIImagePNGRepresentation(mealImage)
         
         let url = URL(string: "https://api.imgur.com/3/image")
@@ -117,34 +159,38 @@ class APIManager: NSObject {
             
             if let statusCode = (response as? HTTPURLResponse)?.statusCode {
                 if statusCode != 200 {
-                    print("statusCode should be 200, but is \(statusCode)")
+                    print("UploadImage statusCode should be 200, but is \(statusCode)")
                     print("response: \(response!)")
                 }
             }
             
             if let responseString = String(data: data, encoding: .utf8) {
-                print("responseString: \(responseString)")
+                print("uploadMeal responseString: \(responseString)")
+            }
+            
+            var urlString: String?
+            defer {                 // defer will always get called before function finishes
+                completionHandler(urlString)
             }
             
             do {
                 // get created object's id from data
-                let json = try JSONSerialization.jsonObject(with: data) as! Dictionary<String,Dictionary<String,Any>>
-                guard let jsonImage = json["data"], let imageURL = jsonImage["link"] as? String else {
+                let json = try JSONSerialization.jsonObject(with: data) as! Dictionary<String,Any>
+                guard let data = json["data"] as? Dictionary<String,Any>, let imageURL = data["link"] as? String else {
                     return
                 }
-                self.saveImageURLToApi(imageURL: imageURL)
+                urlString = imageURL
+                
             } catch {
                 print(#line, error.localizedDescription)
             }
+            
         }
         task.resume()
     }
     
     
-    private func saveImageURLToApi(imageURL: String) {
-        
-        
-    }
+    
     
     func getMealsFromAPI(completionHandler: @escaping ([Meal]?, Error?) -> Void) {
         
@@ -175,7 +221,7 @@ class APIManager: NSObject {
             }
             
             if let responseString = String(data: data, encoding: .utf8) {
-                print("responseString: \(responseString)")
+                print("GetMealsFromAPI responseString: \(responseString)")
             }
             
             do {

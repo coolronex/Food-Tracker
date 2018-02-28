@@ -120,7 +120,6 @@ class MealViewController: UIViewController, UITextFieldDelegate, UIImagePickerCo
         
         if let apiManager = apiManager, let meal = meal {
             apiManager.saveMealsInAPI(meal: meal)
-            apiManager.uploadImage(meal: meal)
         }
     }
     
