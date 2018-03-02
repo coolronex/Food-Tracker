@@ -133,7 +133,7 @@ import UIKit
             button.setImage(highlightedStar, for: [.highlighted, .selected])
             
             // Add constraints
-            button.translatesAutoresizingMaskIntoConstraints = false // disable button's generated constraints
+            button.translatesAutoresizingMaskIntoConstraints = false// disable button's generated constraints
             button.heightAnchor.constraint(equalToConstant: starSize.height).isActive = true
             button.widthAnchor.constraint(equalToConstant: starSize.width).isActive = true
             

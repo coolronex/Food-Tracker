@@ -236,10 +236,19 @@ class APIManager: NSObject {
                     let rating = mealDictionary["rating"] as? Int ?? 0
                     let calories = mealDictionary["calories"] as? Int ?? 0
                     let description = mealDictionary["description"] as? String ?? ""
-                    let image = mealDictionary["imagePath"] as? UIImage ?? UIImage(named:"defaultPhoto")
-                    let newMeal = Meal(name: title, photo: image, rating: rating, calories: calories, mealDescription: description)
-                    if let newMeal = newMeal {
-                        mealsArray.append(newMeal)
+                    let image = mealDictionary["imagePath"] as? String
+                    
+                    guard let unwrappedImage = image else {
+                        continue
+                    }
+                    if let imageURLString = URL(string: unwrappedImage) {
+                        let imageData = try! Data(contentsOf: imageURLString)
+                        let mealImage = UIImage(data: imageData)
+                        
+                        let newMeal = Meal(name: title, photo: mealImage, rating: rating, calories: calories, mealDescription: description)
+                        if let newMeal = newMeal {
+                            mealsArray.append(newMeal)
+                        }
                     }
                 }
                 completionHandler(mealsArray, nil)
