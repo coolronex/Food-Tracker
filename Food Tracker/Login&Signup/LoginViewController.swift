@@ -123,7 +123,7 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     
     func textFieldDidEndEditing(_ textField: UITextField) {
         if textField.text == "" {
-            textField.text = " "
+            textField.text = "%20"
         }
     }
     
