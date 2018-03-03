@@ -10,6 +10,8 @@ import UIKit
 
 class APIManager: NSObject {
     
+    // MARK: Saving/Uploading Meal Objects
+    
     func saveMealsInAPI(meal: Meal) {
         
         var components = URLComponents(string:"https://cloud-tracker.herokuapp.com")
@@ -62,82 +64,7 @@ class APIManager: NSObject {
         task.resume()
     }
     
-    private func getMealIDFromData(data: Data) -> Int? {
-        
-        var mealID: Int?
-        do {
-            // get created object's id from data
-            let json = try JSONSerialization.jsonObject(with: data) as! Dictionary<String,Dictionary<String,Any>>
-            guard let jsonMeal = json["meal"], let id = jsonMeal["id"] as? Int else {
-                return mealID
-            }
-            mealID = id
-        } catch {
-            print(#line, error.localizedDescription)
-        }
-        return mealID
-    }
-    
-    private func updateApiWithRatingAndImage(mealID: Int, rating: Int, imageUrl: String) {
-        
-        guard var components = URLComponents(string: "https://cloud-tracker.herokuapp.com/users/me/meals/\(mealID)/rate") else {return}
-        let convertedRating = String(rating)
-        let ratingQuery = URLQueryItem(name: "rating", value: convertedRating)
-        components.queryItems = [ratingQuery]
-        guard let url = components.url else {return}
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        
-        request.addValue("2fR8hefxBqvMenHQ5vum226Q", forHTTPHeaderField: "token")
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-    
-        let session = URLSession.shared
-        let task = session.dataTask(with: request, completionHandler: { (data: Data?, response: URLResponse?, error: Error?) -> Void in
-            if (error == nil) {
-                // Success
-                let statusCode = (response as! HTTPURLResponse).statusCode
-                print("UPDATE RATING Session Task Succeeded: HTTP \(statusCode)")
-            }
-            else {
-                // Failure
-                print("URL Session Task Failed: %@", error!.localizedDescription);
-                return
-            }
-            self.updateImage(mealID: mealID, imageUrl: imageUrl)
-            
-        })
-        task.resume()
-    }
-    
-    
-    private func updateImage(mealID: Int, imageUrl: String) {
-        
-        guard var components = URLComponents(string: "https://cloud-tracker.herokuapp.com/users/me/meals/\(mealID)/photo") else { return }
-        
-        let photoQuery = URLQueryItem(name: "photo", value: imageUrl)
-        components.queryItems = [photoQuery]
-        guard let url = components.url else {return}
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        
-        request.addValue("2fR8hefxBqvMenHQ5vum226Q", forHTTPHeaderField: "token")
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        let session = URLSession.shared
-        let task = session.dataTask(with: request, completionHandler: { (data: Data?, response: URLResponse?, error: Error?) -> Void in
-            if (error == nil) {
-                // Success
-                let statusCode = (response as! HTTPURLResponse).statusCode
-                print("Update Image URL Session Task Succeeded: HTTP \(statusCode)")
-            }
-            else {
-                // Failure
-                print("URL Session Task Failed: %@", error!.localizedDescription);
-                return
-            }
-        })
-        task.resume()
-    }
+    // Upload image to imgur to get a URL link
     
     private func uploadImage(meal: Meal, completionHandler: @escaping (String?) -> ()) {
         
@@ -151,7 +78,7 @@ class APIManager: NSObject {
         request.httpMethod = "POST"
         
         let task = URLSession.shared.uploadTask(with: request, from: imageData) { (data, response, error) in
-        
+            
             guard let data = data, error == nil else {
                 print("error: \(error!.localizedDescription)")
                 return
@@ -189,7 +116,95 @@ class APIManager: NSObject {
         task.resume()
     }
     
+    // Need Meal ID to in order to update Rating and Image
     
+    private func getMealIDFromData(data: Data) -> Int? {
+        
+        var mealID: Int?
+        do {
+            // get created object's id from data
+            let json = try JSONSerialization.jsonObject(with: data) as! Dictionary<String,Dictionary<String,Any>>
+            guard let jsonMeal = json["meal"], let id = jsonMeal["id"] as? Int else {
+                return mealID
+            }
+            mealID = id
+        } catch {
+            print(#line, error.localizedDescription)
+        }
+        return mealID
+    }
+    
+    
+    private func updateApiWithRatingAndImage(mealID: Int, rating: Int, imageUrl: String) {
+        
+        // Update Rating first
+        
+        guard var components = URLComponents(string: "https://cloud-tracker.herokuapp.com/users/me/meals/\(mealID)/rate") else {return}
+        let convertedRating = String(rating)
+        let ratingQuery = URLQueryItem(name: "rating", value: convertedRating)
+        components.queryItems = [ratingQuery]
+        guard let url = components.url else {return}
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        
+        request.addValue("2fR8hefxBqvMenHQ5vum226Q", forHTTPHeaderField: "token")
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+    
+        let session = URLSession.shared
+        let task = session.dataTask(with: request, completionHandler: { (data: Data?, response: URLResponse?, error: Error?) -> Void in
+            if (error == nil) {
+                // Success
+                let statusCode = (response as! HTTPURLResponse).statusCode
+                print("UPDATE RATING Session Task Succeeded: HTTP \(statusCode)")
+            }
+            else {
+                // Failure
+                print("URL Session Task Failed: %@", error!.localizedDescription);
+                return
+            }
+            
+            // Update Image
+            
+            self.updateImage(mealID: mealID, imageUrl: imageUrl)
+            
+        })
+        task.resume()
+    }
+    
+    
+    private func updateImage(mealID: Int, imageUrl: String) {
+        
+        guard var components = URLComponents(string: "https://cloud-tracker.herokuapp.com/users/me/meals/\(mealID)/photo") else { return }
+        
+        let photoQuery = URLQueryItem(name: "photo", value: imageUrl)
+        components.queryItems = [photoQuery]
+        guard let url = components.url else {return}
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        
+        request.addValue("2fR8hefxBqvMenHQ5vum226Q", forHTTPHeaderField: "token")
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let session = URLSession.shared
+        let task = session.dataTask(with: request, completionHandler: { (data: Data?, response: URLResponse?, error: Error?) -> Void in
+            if (error == nil) {
+                // Success
+                let statusCode = (response as! HTTPURLResponse).statusCode
+                print("Update Image URL Session Task Succeeded: HTTP \(statusCode)")
+            }
+            else {
+                // Failure
+                print("URL Session Task Failed: %@", error!.localizedDescription);
+                return
+            }
+        })
+        task.resume()
+    }
+    
+    
+    
+    
+    // MARK: Fetching Meal Objects
     
     
     func getMealsFromAPI(completionHandler: @escaping ([Meal]?, Error?) -> Void) {
@@ -236,13 +251,13 @@ class APIManager: NSObject {
                     let rating = mealDictionary["rating"] as? Int ?? 0
                     let calories = mealDictionary["calories"] as? Int ?? 0
                     let description = mealDictionary["description"] as? String ?? ""
-                    let image = mealDictionary["imagePath"] as? String
+                    let imagePath = mealDictionary["imagePath"] as? String
                     
-                    guard let unwrappedImage = image else {
+                    guard let unwrappedImagePath = imagePath else {
                         continue
                     }
-                    if let imageURLString = URL(string: unwrappedImage) {
-                        let imageData = try! Data(contentsOf: imageURLString)
+                    if let url = URL(string: unwrappedImagePath) {
+                        let imageData = try! Data(contentsOf: url)
                         let mealImage = UIImage(data: imageData)
                         
                         let newMeal = Meal(name: title, photo: mealImage, rating: rating, calories: calories, mealDescription: description)
