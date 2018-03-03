@@ -13,28 +13,36 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var usernameTextField: UITextField!
     @IBOutlet weak var passwordTextField: UITextField!
     @IBOutlet weak var loginButton: UIButton!
+    @IBOutlet weak var createAccountView: UIView!
+    
+    let actInd = UIActivityIndicatorView()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        setupBackgroundGradient()
        
+        usernameTextField.backgroundColor = UIColor(red:1.0, green:1.0, blue:1.0, alpha:0.15)
+        usernameTextField.textColor = UIColor.white
         usernameTextField.layer.cornerRadius = 5
         
-        usernameTextField.backgroundColor = UIColor(red:1.0, green:1.0, blue:1.0, alpha:0.25)
-        usernameTextField.textColor = UIColor(red:0.15, green:0.15, blue:0.15, alpha:1)
-        
-        passwordTextField.backgroundColor = UIColor(red:1.0, green:1.0, blue:1.0, alpha:0.25)
-        passwordTextField.textColor = UIColor.black
+        passwordTextField.backgroundColor = UIColor(red:1.0, green:1.0, blue:1.0, alpha:0.15)
+        passwordTextField.textColor = UIColor.white
         passwordTextField.layer.cornerRadius = 5
         
         loginButton.layer.cornerRadius = 5
         loginButton.layer.borderWidth = 2
-        loginButton.layer.borderColor = UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 0.25).cgColor
+        loginButton.layer.borderColor = UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 0.7).cgColor
+        
+        createAccountView.backgroundColor = UIColor(red:1.0, green:1.0, blue:1.0, alpha:0.15)
+        loginButton.layer.borderWidth = 1
+        loginButton.layer.borderColor = UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 0.85).cgColor
     }
 
     
     @IBAction func loginTapped(_ sender: UIButton) {
+        
+        
+        
+        showActivityIndicatory(uiView: view)
         
         var components = URLComponents(string:"https://cloud-tracker.herokuapp.com")
         components?.path = "/login"
@@ -63,13 +71,19 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
                     print("statusCode should be 200, but is \(statusCode)")
                     print("response: \(response!)")
                     OperationQueue.main.addOperation {
-                        let alert = UIAlertController(title: "Incorrect username/password",
+                        self.actInd.stopAnimating()
+                        
+                        let alert = UIAlertController(title: "Incorrect username or password",
                                                       message: "Please try again",
                                                       preferredStyle: UIAlertControllerStyle.alert)
                         let ok = UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil)
                         
                         alert.addAction(ok)
                         self.present(alert, animated: true, completion: nil)
+                    }
+                } else {
+                    OperationQueue.main.addOperation {
+                        self.performSegue(withIdentifier: "showMeals", sender: nil)
                     }
                 }
             }
@@ -85,39 +99,38 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
                     return
                 }
                 print(token)
-                
-                
             } catch {
                 print(#line, error.localizedDescription)
             }
-        
+            OperationQueue.main.addOperation {
+            }
         }
         task.resume()
     }
     
+    // MARK: Private Methods
+    
+    private func showActivityIndicatory(uiView: UIView) {
+        actInd.frame = CGRect(x: 0, y: 0, width: 40.0, height: 40.0)
+        actInd.center = uiView.center
+        actInd.hidesWhenStopped = true
+        actInd.activityIndicatorViewStyle = UIActivityIndicatorViewStyle.whiteLarge
+        uiView.addSubview(actInd)
+        actInd.startAnimating()
+    }
+    
+    // MARK: TextField Delegate Methods
+    
     func textFieldDidEndEditing(_ textField: UITextField) {
-        
-        if usernameTextField.text == "" {
-            usernameTextField.text = " "
-        }
-        if passwordTextField.text == "" {
-            passwordTextField.text = " "
+        if textField.text == "" {
+            textField.text = " "
         }
     }
-
-    private func setupBackgroundGradient() {
-        
-        let gradient = CAGradientLayer()
-//      let colorTop = UIColor.white.cgColor
-//      let colorBottom = UIColor.black.cgColor
-        let colorTop = UIColor(red: 116.0 / 255.0, green: 71.0 / 255.0, blue: 162.0 / 255.0, alpha: 1.0).cgColor
-        let colorBottom = UIColor(red: 84.0 / 255.0, green: 94.0 / 255.0, blue: 183.0 / 255.0, alpha: 1.0).cgColor
-        
-        gradient.frame = view.bounds
-        gradient.colors = [colorTop, colorBottom]
-        gradient.startPoint = CGPoint(x: 0, y: 0)
-        gradient.endPoint = CGPoint(x: 1, y: 0)
-        
-        view.layer.insertSublayer(gradient, at: 0)
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
     }
+    
+    
 }
