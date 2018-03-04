@@ -40,8 +40,6 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     
     @IBAction func loginTapped(_ sender: UIButton) {
         
-        
-        
         showActivityIndicatory(uiView: view)
         
         var components = URLComponents(string:"https://cloud-tracker.herokuapp.com")
@@ -71,6 +69,7 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
                     print("statusCode should be 200, but is \(statusCode)")
                     print("response: \(response!)")
                     OperationQueue.main.addOperation {
+                        
                         self.actInd.stopAnimating()
                         
                         let alert = UIAlertController(title: "Incorrect username or password",
@@ -81,10 +80,6 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
                         alert.addAction(ok)
                         self.present(alert, animated: true, completion: nil)
                     }
-                } else {
-                    OperationQueue.main.addOperation {
-                        self.performSegue(withIdentifier: "showMeals", sender: nil)
-                    }
                 }
             }
             
@@ -93,16 +88,20 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
             }
             
             do {
-                // get created object's id from data
+                // get token from API
                 let json = try JSONSerialization.jsonObject(with: data) as! Dictionary<String,Any>
                 guard let token = json["token"] as? String else {
                     return
                 }
-                print(token)
+                
+                UserDefaults.standard.set(token, forKey: "foodTrackerToken")
+                
+                OperationQueue.main.addOperation {
+                    self.performSegue(withIdentifier: "loginToMeals", sender: nil)
+                }
+               
             } catch {
                 print(#line, error.localizedDescription)
-            }
-            OperationQueue.main.addOperation {
             }
         }
         task.resume()
@@ -120,12 +119,6 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     }
     
     // MARK: TextField Delegate Methods
-    
-    func textFieldDidEndEditing(_ textField: UITextField) {
-        if textField.text == "" {
-            textField.text = "%20"
-        }
-    }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()

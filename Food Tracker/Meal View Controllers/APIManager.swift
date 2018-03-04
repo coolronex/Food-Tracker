@@ -10,6 +10,8 @@ import UIKit
 
 class APIManager: NSObject {
     
+    let userToken = UserDefaults.standard.value(forKey: "foodTrackerToken") as? String ?? ""
+    
     // MARK: Saving/Uploading Meal Objects
     
     func saveMealsInAPI(meal: Meal) {
@@ -30,7 +32,7 @@ class APIManager: NSObject {
         }
         
         var request = URLRequest(url: urlWithComponents)
-        request.addValue("2fR8hefxBqvMenHQ5vum226Q", forHTTPHeaderField: "token")
+        request.addValue(userToken, forHTTPHeaderField: "token")
         request.httpMethod = "POST"
         
         let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
@@ -147,7 +149,7 @@ class APIManager: NSObject {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         
-        request.addValue("2fR8hefxBqvMenHQ5vum226Q", forHTTPHeaderField: "token")
+        request.addValue(userToken, forHTTPHeaderField: "token")
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
     
         let session = URLSession.shared
@@ -182,7 +184,7 @@ class APIManager: NSObject {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         
-        request.addValue("2fR8hefxBqvMenHQ5vum226Q", forHTTPHeaderField: "token")
+        request.addValue(userToken, forHTTPHeaderField: "token")
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         
         let session = URLSession.shared
@@ -218,7 +220,7 @@ class APIManager: NSObject {
         }
         
         var request = URLRequest(url: urlWithComponents)
-        request.addValue("2fR8hefxBqvMenHQ5vum226Q", forHTTPHeaderField: "token")
+        request.addValue(userToken, forHTTPHeaderField: "token")
         request.httpMethod = "GET"
         
         let task = URLSession.shared.dataTask(with: request) { (data, response, error) in

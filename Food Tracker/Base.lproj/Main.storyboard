@@ -23,7 +23,7 @@
         <!--Login View Controller-->
         <scene sceneID="cDX-6C-nPO">
             <objects>
-                <viewController id="Jba-Nw-ZEk" customClass="LoginViewController" customModule="Food_Tracker" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="loginViewController" id="Jba-Nw-ZEk" customClass="LoginViewController" customModule="Food_Tracker" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Ua5-h8-GD6" customClass="GradientView" customModule="Food_Tracker" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -142,12 +142,12 @@
                         <outlet property="loginButton" destination="Byi-5m-u0N" id="O8s-k6-8qi"/>
                         <outlet property="passwordTextField" destination="HCW-ME-iLr" id="HQh-YC-daK"/>
                         <outlet property="usernameTextField" destination="72V-kJ-sQX" id="7q3-2P-JQ2"/>
-                        <segue destination="W8O-nC-nZj" kind="show" identifier="showMeals" id="0ax-wv-esd"/>
+                        <segue destination="W8O-nC-nZj" kind="show" identifier="loginToMeals" animates="NO" action="showDetailViewController:sender:" id="0ax-wv-esd"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dIm-Dc-tlf" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-2041" y="-725"/>
+            <point key="canvasLocation" x="-2058" y="-655"/>
         </scene>
         <!--View Controller-->
         <scene sceneID="Xbo-Sw-Skz">
@@ -193,10 +193,13 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="NGY-Yp-47P"/>
                     </view>
+                    <connections>
+                        <segue destination="W8O-nC-nZj" kind="show" identifier="signupToMeals" id="ha0-a0-u6c"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="xsg-iI-XBi" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-1092.753623188406" y="-724.72826086956525"/>
+            <point key="canvasLocation" x="-1258" y="-655"/>
         </scene>
         <!--Your Meals-->
         <scene sceneID="kjf-Hd-W3Z">
@@ -351,7 +354,7 @@
         <!--Navigation Controller-->
         <scene sceneID="zWr-lA-h0K">
             <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="W8O-nC-nZj" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="mealNavController" automaticallyAdjustsScrollViewInsets="NO" id="W8O-nC-nZj" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="ym6-nT-njy">
                         <rect key="frame" x="0.0" y="20" width="414" height="44"/>
@@ -389,6 +392,7 @@
         <image name="defaultPhoto" width="540" height="540"/>
     </resources>
     <inferredMetricsTieBreakers>
+        <segue reference="0ax-wv-esd"/>
         <segue reference="G8z-oK-FWN"/>
     </inferredMetricsTieBreakers>
 </document>
