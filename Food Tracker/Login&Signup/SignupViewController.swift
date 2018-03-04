@@ -1,25 +1,32 @@
 //
-//  LoginViewController.swift
+//  SignupViewController.swift
 //  Food Tracker
 //
-//  Created by Aaron Chong on 3/2/18.
+//  Created by Aaron Chong on 3/3/18.
 //  Copyright © 2018 Aaron Chong. All rights reserved.
 //
 
 import UIKit
 
-class LoginViewController: UIViewController, UITextFieldDelegate {
+class SignupViewController: UIViewController, UITextFieldDelegate {
 
+    enum MessageTitle:String {
+       
+        case emptyUsername = "Username field is empty"
+        case emptyPassword = "Password field is empty"
+        case unmatchedPassword = "Password does not match"
+    }
+    
     @IBOutlet weak var usernameTextField: UITextField!
     @IBOutlet weak var passwordTextField: UITextField!
-    @IBOutlet weak var loginButton: UIButton!
-    @IBOutlet weak var createAccountView: UIView!
+    @IBOutlet weak var retypePasswordTextField: UITextField!
+    @IBOutlet weak var createAccountButton: UIButton!
     
     let actInd = UIActivityIndicatorView()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-       
+        
         usernameTextField.backgroundColor = UIColor(red:1.0, green:1.0, blue:1.0, alpha:0.15)
         usernameTextField.textColor = UIColor.white
         usernameTextField.layer.cornerRadius = 5
@@ -28,28 +35,39 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         passwordTextField.textColor = UIColor.white
         passwordTextField.layer.cornerRadius = 5
         
-        loginButton.layer.cornerRadius = 5
-        loginButton.layer.borderWidth = 2
-        loginButton.layer.borderColor = UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 0.7).cgColor
+        retypePasswordTextField.backgroundColor = UIColor(red:1.0, green:1.0, blue:1.0, alpha:0.15)
+        retypePasswordTextField.textColor = UIColor.white
+        retypePasswordTextField.layer.cornerRadius = 5
         
-        createAccountView.layer.shadowOffset = CGSize(width: 3, height: -10)
-        createAccountView.layer.shadowColor = UIColor.black.cgColor
-        createAccountView.layer.shadowRadius = 15.0
-        createAccountView.layer.shadowOpacity = 0.8
-        createAccountView.backgroundColor = UIColor(red:1.0, green:1.0, blue:1.0, alpha:0.15)
+        createAccountButton.layer.cornerRadius = 5
+        createAccountButton.layer.borderWidth = 2
+        createAccountButton.layer.borderColor = UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 0.7).cgColor
     }
 
-    
-    @IBAction func loginTapped(_ sender: UIButton) {
+    @IBAction func createAccountTapped(_ sender: UIButton) {
         
         showActivityIndicatory(uiView: view)
         
+        if usernameTextField.text == "" {
+            usernamePasswordRequirementCheck(titleMessage: MessageTitle.emptyUsername.rawValue)
+            return
+        }
+        
+        if passwordTextField.text == "" {
+            usernamePasswordRequirementCheck(titleMessage: MessageTitle.emptyPassword.rawValue)
+            return
+        }
+        
+        if passwordTextField.text != retypePasswordTextField.text {
+            usernamePasswordRequirementCheck(titleMessage: MessageTitle.unmatchedPassword.rawValue)
+            return
+        }
+        
         var components = URLComponents(string:"https://cloud-tracker.herokuapp.com")
-        components?.path = "/login"
+        components?.path = "/signup"
         
         let usernameQuery = URLQueryItem(name: "username", value: usernameTextField.text)
         let passwordQuery = URLQueryItem(name: "password", value: passwordTextField.text)
-        
         components?.queryItems = [usernameQuery, passwordQuery]
         
         let url = components?.url
@@ -74,8 +92,8 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
                         
                         self.actInd.stopAnimating()
                         
-                        let alert = UIAlertController(title: "Incorrect username or password",
-                                                      message: "Please try again",
+                        let alert = UIAlertController(title: "Username already exists",
+                                                      message: "Please choose a new username",
                                                       preferredStyle: UIAlertControllerStyle.alert)
                         let ok = UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil)
                         
@@ -84,9 +102,9 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
                     }
                 }
             }
-            
+    
             if let responseString = String(data: data, encoding: .utf8) {
-                print("Login responseString: \(responseString)")
+                print("Signup responseString: \(responseString)")
             }
             
             do {
@@ -99,17 +117,39 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
                 UserDefaults.standard.set(token, forKey: "foodTrackerToken")
                 
                 OperationQueue.main.addOperation {
-                    self.performSegue(withIdentifier: "loginToMeals", sender: nil)
+                    self.performSegue(withIdentifier: "signupToMeals", sender: nil)
                 }
-               
+                
             } catch {
                 print(#line, error.localizedDescription)
             }
+            
         }
         task.resume()
     }
     
+    @IBAction func cancelTapped(_ sender: UIButton) {
+        if let nav = self.navigationController {
+            nav.popViewController(animated: true)
+        } else {
+            self.dismiss(animated: true, completion: nil)
+        }
+    }
+    
+    
     // MARK: Private Methods
+    
+    private func usernamePasswordRequirementCheck(titleMessage: String) {
+        
+        self.actInd.stopAnimating()
+        let alert = UIAlertController(title: titleMessage,
+                                      message: "Please try again",
+                                      preferredStyle: UIAlertControllerStyle.alert)
+        let ok = UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil)
+        alert.addAction(ok)
+        self.present(alert, animated: true, completion: nil)
+    }
+    
     
     private func showActivityIndicatory(uiView: UIView) {
         actInd.frame = CGRect(x: 0, y: 0, width: 40.0, height: 40.0)
@@ -126,6 +166,4 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         textField.resignFirstResponder()
         return true
     }
-    
-    
 }
