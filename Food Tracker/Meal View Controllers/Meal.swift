@@ -19,8 +19,9 @@ class Meal: NSObject {
     var rating: Int
     var calories: Int
     var mealDescription: String
+    var id: Int
     
-    init?(name: String, photo: UIImage?, rating: Int, calories: Int, mealDescription: String) {
+    init?(name: String, photo: UIImage?, rating: Int, calories: Int, mealDescription: String, id: Int) {
         
         // The name must not be empty
         guard !name.isEmpty else {
@@ -38,6 +39,7 @@ class Meal: NSObject {
         self.rating = rating
         self.calories = calories
         self.mealDescription = mealDescription
+        self.id = id
     }
     
     

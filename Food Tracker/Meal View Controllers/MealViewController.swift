@@ -116,7 +116,7 @@ class MealViewController: UIViewController, UITextFieldDelegate, UIImagePickerCo
         let mealDescription = mealDescriptionTextField.text
         
         // Set the meal to be passed to MealTableViewController after the unwind segue.
-        meal = Meal(name: name, photo: photo, rating: rating, calories: calories!, mealDescription: mealDescription!)
+        meal = Meal(name: name, photo: photo, rating: rating, calories: calories!, mealDescription: mealDescription!, id: 0)
         
         if let apiManager = apiManager, let meal = meal {
             apiManager.saveMealsInAPI(meal: meal)

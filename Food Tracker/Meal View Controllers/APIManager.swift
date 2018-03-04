@@ -59,7 +59,7 @@ class APIManager: NSObject {
                 if let id = self.getMealIDFromData(data: data), let imageURL = urlString {
     
                     // update rating and imageURL to API
-                    self.updateApiWithRatingAndImage(mealID: id, rating: meal.rating, imageUrl: imageURL)
+                    self.updateApiWithRatingAndImage(mealID: id, rating: meal.rating, imageUrl: imageURL, meal: meal)
                 }
             })
         }
@@ -137,10 +137,11 @@ class APIManager: NSObject {
     }
     
     
-    private func updateApiWithRatingAndImage(mealID: Int, rating: Int, imageUrl: String) {
+    private func updateApiWithRatingAndImage(mealID: Int, rating: Int, imageUrl: String, meal: Meal) {
         
         // Update Rating first
-        
+        meal.id = mealID
+
         guard var components = URLComponents(string: "https://cloud-tracker.herokuapp.com/users/me/meals/\(mealID)/rate") else {return}
         let convertedRating = String(rating)
         let ratingQuery = URLQueryItem(name: "rating", value: convertedRating)
@@ -203,9 +204,31 @@ class APIManager: NSObject {
         task.resume()
     }
     
+    // MARK: Delete Meal Objects
     
-    
-    
+    func deleteMealObjectsFromAPI(meal: Meal) {
+        
+        var components = URLComponents(string:"https://cloud-tracker.herokuapp.com")
+        components?.path = "/users/me/meals/\(meal.id)"
+        
+        guard let url = components?.url else {return}
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        request.addValue(userToken, forHTTPHeaderField: "token")
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
+            
+            if let statusCode = (response as? HTTPURLResponse)?.statusCode {
+                if statusCode != 204 {
+                    print("statusCode should be 200, but is \(statusCode)")
+                    print("response: \(response!)")
+                }
+            }
+        }
+        task.resume()
+    }
+
     // MARK: Fetching Meal Objects
     
     
@@ -254,15 +277,16 @@ class APIManager: NSObject {
                     let calories = mealDictionary["calories"] as? Int ?? 0
                     let description = mealDictionary["description"] as? String ?? ""
                     let imagePath = mealDictionary["imagePath"] as? String
+                    let mealID = mealDictionary["id"] as? Int
                     
                     guard let unwrappedImagePath = imagePath else {
                         continue
                     }
-                    if let url = URL(string: unwrappedImagePath) {
+                    if let url = URL(string: unwrappedImagePath), let mealID = mealID {
                         let imageData = try! Data(contentsOf: url)
                         let mealImage = UIImage(data: imageData)
                         
-                        let newMeal = Meal(name: title, photo: mealImage, rating: rating, calories: calories, mealDescription: description)
+                        let newMeal = Meal(name: title, photo: mealImage, rating: rating, calories: calories, mealDescription: description, id: mealID)
                         if let newMeal = newMeal {
                             mealsArray.append(newMeal)
                         }
